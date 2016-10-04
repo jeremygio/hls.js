@@ -61,8 +61,14 @@ class PlaylistLoader extends EventHandler {
     }
     let loader = this.loaders[context.type];
     if (loader) {
-      logger.warn(`abort previous loader for type:${context.type}`);
-      loader.abort();
+      let loaderContext = loader.context;
+      if (loaderContext && loaderContext.url === url) {
+        logger.warn(`playlist request ongoing`);
+        return;
+      } else {
+        logger.warn(`abort previous loader for type:${context.type}`);
+        loader.abort();
+      }
     }
     loader  = this.loaders[context.type] = context.loader = typeof(config.pLoader) !== 'undefined' ? new config.pLoader(config) : new config.loader(config);
     context.url = url;
@@ -374,7 +380,7 @@ class PlaylistLoader extends EventHandler {
             });
             // if no embedded audio track defined, but audio codec signaled in quality level, we need to signal this main audio track
             // this could happen with playlists with alt audio rendition in which quality levels (main) contains both audio+video. but with mixed audio track not signaled
-            if (embeddedAudioFound === false && levels[0].audioCodec) {
+            if (embeddedAudioFound === false && levels[0].audioCodec && !levels[0].attrs.AUDIO) {
               logger.log('audio codec signaled in quality level, but no embedded audio track signaled, create one');
               audiotracks.unshift({ type : 'main', name : 'main'});
             }

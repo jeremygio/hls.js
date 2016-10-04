@@ -96,6 +96,9 @@ class BufferController extends EventHandler {
       this.media = null;
       this.pendingTracks = {};
       this.sourceBuffer = {};
+      this.flushRange = [];
+      this.segments = [];
+      this.appended = 0;
     }
     this.onmso = this.onmse = this.onmsc = null;
     this.hls.trigger(Event.MEDIA_DETACHED);
@@ -444,6 +447,8 @@ class BufferController extends EventHandler {
             continue;
           }
           sb = sourceBuffer[type];
+          // we are going to flush buffer, mark source buffer as 'not ended'
+          sb.ended = false;
           if (!sb.updating) {
             for (i = 0; i < sb.buffered.length; i++) {
               bufStart = sb.buffered.start(i);
